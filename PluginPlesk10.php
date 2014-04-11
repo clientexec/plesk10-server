@@ -7,7 +7,12 @@ require_once 'modules/admin/models/ServerPlugin.php';
 */
 class PluginPlesk10 extends ServerPlugin
 {
-    public $usesPackageName = true;
+  public $features = array(
+        'packageName' => true,
+        'testConnection' => false,
+        'showNameservers' => true
+    );
+
     function getVariables()
     {
         /* Specification
