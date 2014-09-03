@@ -7,7 +7,7 @@ require_once 'library/CE/XmlFunctions.php';
 */
 class PleskServer10
 {
-    var $rpcHandlerVersion = '1.6.3.0';
+    var $rpcHandlerVersion = '1.6.3.2';
     var $rpcHandlerPort = 8443;
     var $rpcHandlerPath = '/enterprise/control/agent.php';
     var $host;
