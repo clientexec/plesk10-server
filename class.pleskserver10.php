@@ -51,12 +51,12 @@ class PleskServer10
                         <address>".$this->_convertStr($address)."</address>
                         <city>".$this->_convertStr($city)."</city>
                         <state>".$this->_convertStr($state)."</state>
-                        <pcode>".$this->_convertStr($pcode)."</pcode>        
+                        <pcode>".$this->_convertStr($pcode)."</pcode>
                     </gen_info>
                 </add>
             </customer>";
-        
-		
+
+
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'add', $errMessage)) {
@@ -121,11 +121,11 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'ippool-add-ip', $errMessage)) {
-			
+
 			// IP is already on the reseller account
 			if ( $errorCode == 1023 )
 				return;
-			
+
 			throw new Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'ippool-add-ip') != 'ok') {
@@ -172,7 +172,7 @@ class PleskServer10
         $template = '';
         $this->_processPackageVars($hostingParams, $preferences, $template, $packageVars, $login, $password);
         $limits = $this->_getLimits($packageVars, false);
-		
+
         $request = "
             <webspace>
                 <add>
@@ -180,8 +180,8 @@ class PleskServer10
                         <name>".$this->_convertStr($domainName)."</name>
 						<owner-id>{$userID}</owner-id>
 						<htype>vrt_hst</htype>
-                        <ip_address>$ip</ip_address>						
-						<status>0</status>						
+                        <ip_address>$ip</ip_address>
+						<status>0</status>
                     </gen_setup>
 					<hosting>
 						<vrt_hst>
@@ -234,7 +234,7 @@ class PleskServer10
             throw new Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 	}
-	
+
     // @access	public
     function deleteUser($userId)
     {
@@ -292,7 +292,7 @@ class PleskServer10
         }
         return true;
     }
-	
+
 	function getDomainStatus($domainId)
     {
     	$request = "
@@ -312,11 +312,11 @@ class PleskServer10
         if ($errorCode = $this->_errorCode($response, 'webspace', 'get', $errMessage)) {
             throw new Exception("Plesk returned: $errMessage", $errorCode);
         }
-		
+
 		if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
             throw new Exception('Error contacting Plesk server when trying to get web space information', 101);
         }
-		
+
         return $response;
     }
 
@@ -343,7 +343,7 @@ class PleskServer10
         }
         return true;
     }
-	
+
 	function setResellerStatus($userId, $status)
     {
 		$request = "
@@ -389,7 +389,7 @@ class PleskServer10
 		";
 		if ( strlen($login) > 0 )
 			$request .= "<login>$login</login>";
-		
+
 		if ( strlen($password) > 0 )
 			$request .= "<passwd>$password)</passwd>";
 
@@ -410,8 +410,8 @@ class PleskServer10
 					</values>
                 </set>
             </customer>";
-        
-		
+
+
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'set', $errMessage)) {
@@ -448,7 +448,7 @@ class PleskServer10
 									<value>{$login}</value>
 								</property>";
 		}
-		
+
 		if ( strlen($password) > 0 ) {
 			$request .= "
 								<property>
@@ -460,8 +460,8 @@ class PleskServer10
                                 $hostingParams
                             <ip_address>{$ip}</ip_address>
                             </vrt_hst>
-                        </hosting>                        
-                        $limits                        
+                        </hosting>
+                        $limits
 						$template
                     </values>
                 </set>
@@ -522,10 +522,10 @@ class PleskServer10
         if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
             throw new Exception('Error contacting Plesk server when trying to delete user', 101);
         }
-		
+
         return $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
-	
+
 	function getUserId($domainUserName)
 	{
         $request="<customer>
@@ -548,10 +548,10 @@ class PleskServer10
         if ($this->_returnedStatus($response, 'customer', 'get') != 'ok') {
             throw new Exception('Error contacting Plesk server when trying to delete user', 101);
         }
-	
+
         return $response['packet']['#']['customer'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
-	
+
 	function getResellerId($domainUserName)
 	{
 		$request = "<reseller>
@@ -577,10 +577,10 @@ class PleskServer10
         if ($this->_returnedStatus($response, 'reseller', 'get') != 'ok') {
             throw new Exception('Error contacting Plesk server when trying to delete user', 101);
         }
-	
+
         return $response['packet']['#']['reseller'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
-	
+
 	function upgradeUserToReseller($userId)
 	{
 		$request = "<customer>
@@ -590,16 +590,16 @@ class PleskServer10
 							</filter>
 						</convert-to-reseller>
 					</customer>";
-					
+
 		  $response = $this->_sendRequest($request);
-					
+
 		if ($errorCode = $this->_errorCode($response, 'customer', 'convert-to-reseller', $errMessage)) {
             throw new Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'convert-to-reseller') != 'ok') {
             throw new Exception('Error contacting Plesk server when trying to delete user', 101);
         }
-	
+
         return;
 	}
 
@@ -642,7 +642,7 @@ EOF;
                 if ($name == 'www') {
 					if ( $value == '' )
 						continue;
-						
+
                     $preferences = "<prefs><www>$value</www></prefs>";
                     continue;
                 }
@@ -662,10 +662,10 @@ EOF;
 						continue;
                     }
                 }
-				
+
 				if ( $value == '' )
 					continue;
-				
+
                 $hostingParams .= "<property>\n\t<name>{$name}</name>\n\t<value>{$value}</value>\n</property>\n";
 
                 if ($name == 'fp' && $value == 'true') {
