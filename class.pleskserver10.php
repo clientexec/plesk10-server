@@ -60,10 +60,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'add', $errMessage)) {
-            throw new Exception("Couldn't insert customer in Plesk. Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Couldn't insert customer in Plesk. Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'add') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to add user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to add user', 101);
         }
 
         return $response['packet']['#']['customer'][0]['#']['add'][0]['#']['result'][0]['#']['id'][0]['#'];
@@ -95,10 +95,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'set', $errMessage)) {
-			throw new Exception("Plesk returned: $errMessage", $errorCode);
+			throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'set') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to give user the Create Domains permission', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to give user the Create Domains permission', 101);
         }
 
         return true;
@@ -126,10 +126,10 @@ class PleskServer10
 			if ( $errorCode == 1023 )
 				return;
 
-			throw new Exception("Plesk returned: $errMessage", $errorCode);
+			throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'ippool-add-ip') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to add IP to user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to add IP to user', 101);
         }
     }
 
@@ -147,10 +147,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'ippool_del_ip', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'ippool_del_ip') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to remove IP from user\s IP pool', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to remove IP from user\s IP pool', 101);
         }
     }
 
@@ -205,10 +205,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'webspace', 'add', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'webspace', 'add') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to add domain to user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to add domain to user', 101);
         }
 
         return $response['packet']['#']['webspace'][0]['#']['add'][0]['#']['result'][0]['#']['id'][0]['#'];
@@ -228,10 +228,10 @@ class PleskServer10
 		$response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'del', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'del') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 	}
 
@@ -250,10 +250,10 @@ class PleskServer10
 		$response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'del', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'del') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
     }
 
@@ -288,7 +288,7 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'webspace', 'set', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         return true;
     }
@@ -310,11 +310,11 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'webspace', 'get', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
 
 		if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to get web space information', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to get web space information', 101);
         }
 
         return $response;
@@ -339,7 +339,7 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'set', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         return true;
     }
@@ -363,7 +363,7 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'set', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         return true;
     }
@@ -415,10 +415,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'set', $errMessage)) {
-            throw new Exception("Couldn't update customer in Plesk. Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Couldn't update customer in Plesk. Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'set') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to update user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to update user', 101);
         }
 	}
 
@@ -470,10 +470,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'webspace', 'set', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'webspace', 'set') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to update domain', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to update domain', 101);
         }
 
         return true;
@@ -493,10 +493,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'webspace', 'del', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'webspace', 'del') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
         return true;
     }
@@ -517,10 +517,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
 		if ($errorCode = $this->_errorCode($response, 'webspace', 'get', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 
         return $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
@@ -543,10 +543,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
 		if ($errorCode = $this->_errorCode($response, 'customer', 'get', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'get') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 
         return $response['packet']['#']['customer'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
@@ -572,10 +572,10 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
 		if ($errorCode = $this->_errorCode($response, 'reseller', 'get', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'get') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 
         return $response['packet']['#']['reseller'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
@@ -594,10 +594,10 @@ class PleskServer10
 		  $response = $this->_sendRequest($request);
 
 		if ($errorCode = $this->_errorCode($response, 'customer', 'convert-to-reseller', $errMessage)) {
-            throw new Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'convert-to-reseller') != 'ok') {
-            throw new Exception('Error contacting Plesk server when trying to delete user', 101);
+            throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
 
         return;
@@ -753,14 +753,14 @@ EOF;
 
 		if ( $response instanceof CE_Error )
 		{
-			throw new Exception ("There was a problem with your request: ". $response);
+			throw new CE_Exception ("There was a problem with your request: ". $response);
 		}
 
         $response = XmlFunctions::xmlize($response);
 
 		if ( $response instanceof CE_Error )
 		{
-			throw new Exception ("There was a problem with your XML response: ". $resposne);
+			throw new CE_Exception ("There was a problem with your XML response: ". $resposne);
 		}
 
         return $response;
