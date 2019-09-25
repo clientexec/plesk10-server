@@ -7,7 +7,7 @@ require_once 'modules/admin/models/ServerPlugin.php';
 */
 class PluginPlesk10 extends ServerPlugin
 {
-  public $features = array(
+    public $features = array(
         'packageName' => true,
         'testConnection' => false,
         'showNameservers' => true
@@ -287,6 +287,9 @@ class PluginPlesk10 extends ServerPlugin
             $errors[] = lang('Domain username can only contain alphanumeric characters, dots, dashes and underscores');
         }
 
+        // remove any character that isn't alpha-numeric from the username
+        $args['package']['username'] = preg_replace("/[^a-zA-Z0-9]/", '', $args['package']['username']);
+
         if (strpos($args['package']['password'], $args['package']['username']) !== false) {
             $errors[] = lang('Domain password can\'t contain domain username');
         }
@@ -306,21 +309,21 @@ class PluginPlesk10 extends ServerPlugin
         // Plesk only allows lower case user names
         $args['package']['username'] = strtolower($args['package']['username']);
 
-        if(isset($args['noError'])) {
+        if (isset($args['noError'])) {
             return $args['package']['username'];
-        } else  {
+        } else {
             if (count($errors) > 0) {
-               throw new CE_Exception($errors[0]);
+                throw new CE_Exception($errors[0]);
             }
         }
     }
 
-	function doCreate($args)
-	{
-		$userPackage = new UserPackage($args['userPackageId']);
-		$this->create($this->buildParams($userPackage));
-		return $userPackage->getCustomField("Domain Name") . ' has been created.';
-	}
+    function doCreate($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $this->create($this->buildParams($userPackage));
+        return $userPackage->getCustomField("Domain Name") . ' has been created.';
+    }
 
     function create($args)
     {
@@ -344,51 +347,50 @@ class PluginPlesk10 extends ServerPlugin
             $args['package']['variables']['ssl'] = '1';
         }
 
-		$tUser = new User($args['customer']['id']);
-		$server = $this->getServer($args);
-		$userId = $server->addUser( $args['customer']['first_name'] . ' ' . $args['customer']['last_name'] . ' (' . $args['package']['id'] . ')',
+        $tUser = new User($args['customer']['id']);
+        $server = $this->getServer($args);
+        $userId = $server->addUser( $args['customer']['first_name'] . ' ' . $args['customer']['last_name'] . ' (' . $args['package']['id'] . ')',
                                         $args['package']['username'],
                                         $args['package']['password'],
                                         $tUser);
 
-		// add domain to user
-        if ( $args['package']['name_on_server'] != null && $args['package']['name_on_server'] !=  '' ){
+        // add domain to user
+        if ( $args['package']['name_on_server'] != null && $args['package']['name_on_server'] !=  '' ) {
             $args['package']['variables']['PackageNameOnServer'] = $args['package']['name_on_server'];
             $variables = $this->getVariables();
-            foreach($variables['package_vars_values']['value'] AS $varName=>$attrs){
-                if(isset($attrs['template']) && $attrs['template']){
+            foreach ($variables['package_vars_values']['value'] AS $varName=>$attrs) {
+                if (isset($attrs['template']) && $attrs['template']) {
                     $args['package']['variables']['TemplateAttr'][] = $varName;
                 }
             }
         }
-		$domainId = $server->addWebSpaceToUser($userId, $args['package']['username'], $args['package']['password'], $args['package']['domain_name'], $args['package']['ip'], @$args['package']['variables'], @$tUser );
+        $domainId = $server->addWebSpaceToUser($userId, $args['package']['username'], $args['package']['password'], $args['package']['domain_name'], $args['package']['ip'], @$args['package']['variables'], @$tUser );
 
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-			$server->upgradeUserToReseller($userId);
-			$server->addResellerPermissionsAndLimits($userId, @$args['package']['variables']);
+            $server->upgradeUserToReseller($userId);
+            $server->addResellerPermissionsAndLimits($userId, @$args['package']['variables']);
             $server->addIpToUser($userId, $args['package']['ip']);
         }
     }
 
-	function doUpdate($args)
-	{
-		$userPackage = new UserPackage($args['userPackageId']);
-		$this->update($this->buildParams($userPackage, $args));
-		return $userPackage->getCustomField("Domain Name") . ' has been updated.';
-	}
+    function doUpdate($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $this->update($this->buildParams($userPackage, $args));
+        return $userPackage->getCustomField("Domain Name") . ' has been updated.';
+    }
 
     // use $server to test with mock object
     function update($args)
     {
-		$userName = '';
-		$password = '';
-		$ip = $args['package']['ip'];
-		$package = '';
+        $userName = '';
+        $password = '';
+        $ip = $args['package']['ip'];
+        $package = '';
 
-        foreach ( $args['changes'] as $change => $newValue )
-		{
+        foreach ( $args['changes'] as $change => $newValue ) {
             switch($change)
-			{
+            {
                 case 'username':
                     $userName = $newValue;
                     break;
@@ -404,11 +406,10 @@ class PluginPlesk10 extends ServerPlugin
             }
         }
 
-		$server = $this->getServer($args);
-		$tUser = new User($args['customer']['id']);
+        $server = $this->getServer($args);
+        $tUser = new User($args['customer']['id']);
 
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-
 
             // update reseller account if necessary
             if ($userName != $args['package']['username'] || $password != $args['package']['password']) {
@@ -416,85 +417,82 @@ class PluginPlesk10 extends ServerPlugin
                 $result = $server->updateAccount($tUser, $args['package']['ServerAcctProperties']['userId'], $userName, $password);
             }
         } else {
-			$userID = $this->getUserId($args, $server);
-			$server->updateUserAccount($tUser, $userID, $userName, $password);
-		}
+            $userID = $this->getUserId($args, $server);
+            $server->updateUserAccount($tUser, $userID, $userName, $password);
+        }
 
-		 if ( $package != null && $package !=  '' ){
+        if ($package != null && $package !=  '') {
             $args['package']['variables']['PackageNameOnServer'] = $package;
             $variables = $this->getVariables();
-            foreach($variables['package_vars_values']['value'] AS $varName=>$attrs){
-                if(isset($attrs['template']) && $attrs['template']){
+            foreach ($variables['package_vars_values']['value'] AS $varName=>$attrs) {
+                if (isset($attrs['template']) && $attrs['template']) {
                     $args['package']['variables']['TemplateAttr'][] = $varName;
                 }
             }
         }
 
-
         $domainId = $this->getDomainId($args, $server);
         $server->updateWebSpace($domainId, $userName, $password, $ip, @$args['package']['variables']);
-		return;
+        return;
     }
 
-	function doDelete($args)
-	{
-		$userPackage = new UserPackage($args['userPackageId']);
-		$this->delete($this->buildParams($userPackage), $userPackage);
-		return $userPackage->getCustomField("Domain Name") . ' has been deleted.';
-	}
+    function doDelete($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $this->delete($this->buildParams($userPackage), $userPackage);
+        return $userPackage->getCustomField("Domain Name") . ' has been deleted.';
+    }
 
     function delete($args)
     {
-		$server = $this->getServer($args);
+        $server = $this->getServer($args);
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-			$userID = $this->getResellerId($args, $server);
+            $userID = $this->getResellerId($args, $server);
             $response = $server->deleteReseller($userID);
         } else {
-			$userID = $this->getUserId($args, $server);
-			$response = $server->deleteUser($userID);
+            $userID = $this->getUserId($args, $server);
+            $response = $server->deleteUser($userID);
         }
         return;
     }
 
-	function doSuspend($args)
-	{
-		$userPackage = new UserPackage($args['userPackageId']);
-		$this->suspend($this->buildParams($userPackage), $userPackage);
-		return $userPackage->getCustomField("Domain Name") . ' has been suspended.';
-	}
+    function doSuspend($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $this->suspend($this->buildParams($userPackage), $userPackage);
+        return $userPackage->getCustomField("Domain Name") . ' has been suspended.';
+    }
 
     function suspend($args)
     {
-		$server = $this->getServer($args);
-		// suspend user, which suspends the domain at the same time.
+        $server = $this->getServer($args);
+        // suspend user, which suspends the domain at the same time.
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-			$userID = $this->getResellerId($args, $server);
+            $userID = $this->getResellerId($args, $server);
             $response = $server->setResellerStatus($userID, 16);
         } else {
-			$userID = $this->getUserId($args, $server);
-			$response = $server->setUserStatus($userID, 16);
+            $userID = $this->getUserId($args, $server);
+            $response = $server->setUserStatus($userID, 16);
         }
     }
 
-	function doUnSuspend($args)
-	{
-		$userPackage = new UserPackage($args['userPackageId']);
-		$this->unsuspend($this->buildParams($userPackage), $userPackage);
-		return $userPackage->getCustomField("Domain Name") . ' has been unsuspended.';
-	}
+    function doUnSuspend($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $this->unsuspend($this->buildParams($userPackage), $userPackage);
+        return $userPackage->getCustomField("Domain Name") . ' has been unsuspended.';
+    }
 
     function unsuspend($args)
     {
-		$server = $this->getServer($args);
+        $server = $this->getServer($args);
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-			$userID = $this->getResellerId($args, $server);
-			$response = $server->setResellerStatus($userID, 0);
+            $userID = $this->getResellerId($args, $server);
+            $response = $server->setResellerStatus($userID, 0);
+        } else {
+            $userID = $this->getUserId($args, $server);
+            $response = $server->setUserStatus($userID, 0);
         }
-		else
-		{
-			$userID = $this->getUserId($args, $server);
-			$response = $server->setUserStatus($userID, 0);
-		}
     }
 
     function getDomainId($args, $server)
@@ -502,53 +500,48 @@ class PluginPlesk10 extends ServerPlugin
         return $server->getDomainId($args['package']["domain_name"]);
     }
 
-	function getUserId($args, $server)
+    function getUserId($args, $server)
     {
         return $server->getUserId($args['package']["username"]);
     }
 
-	function getResellerId($args, $server)
+    function getResellerId($args, $server)
     {
         return $server->getResellerId($args['package']["username"]);
     }
 
-	function getServer($args)
-	{
-		if ( isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1 )
-		{
-			$server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Username'], $args['server']['variables']['plugin_plesk10_Password']);
-		}
-		else
-		{
-			if ($args['server']['variables']['plugin_plesk10_Non-Admin_Username'] != '' && $args['server']['variables']['plugin_plesk10_Non-Admin_Password'] != '') {
-				$server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Non-Admin_Username'], $args['server']['variables']['plugin_plesk10_Non-Admin_Password']);
-			} else {
-				$server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Username'], $args['server']['variables']['plugin_plesk10_Password']);
-			}
-		}
-		return $server;
-	}
+    function getServer($args)
+    {
+        if ( isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1 ) {
+            $server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Username'], $args['server']['variables']['plugin_plesk10_Password']);
+        } else {
+            if ($args['server']['variables']['plugin_plesk10_Non-Admin_Username'] != '' && $args['server']['variables']['plugin_plesk10_Non-Admin_Password'] != '') {
+                $server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Non-Admin_Username'], $args['server']['variables']['plugin_plesk10_Non-Admin_Password']);
+            } else {
+                $server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Username'], $args['server']['variables']['plugin_plesk10_Password']);
+            }
+        }
+        return $server;
+    }
 
-	function getAvailableActions($userPackage)
-	{
-		$args = $this->buildParams($userPackage);
-		$actions = array();
-		try {
-			$server = $this->getServer($args);
-			$domainID = $this->getDomainId($args, $server);
-			$response = $server->getDomainStatus($domainID);
-			$status = $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['data'][0]['#']['gen_info'][0]['#']['status'][0]['#'];
-			$actions[] = 'Delete';
-			if ( $status == '0' ) {
-				$actions[] = 'Suspend';
-			} else {
-				$actions[] = 'UnSuspend';
-			}
-		} catch (Exception $e) {
-			$actions[] = 'Create';
-		}
-		return $actions;
-	}
-
+    function getAvailableActions($userPackage)
+    {
+        $args = $this->buildParams($userPackage);
+        $actions = array();
+        try {
+            $server = $this->getServer($args);
+            $domainID = $this->getDomainId($args, $server);
+            $response = $server->getDomainStatus($domainID);
+            $status = $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['data'][0]['#']['gen_info'][0]['#']['status'][0]['#'];
+            $actions[] = 'Delete';
+            if ( $status == '0' ) {
+                $actions[] = 'Suspend';
+            } else {
+                $actions[] = 'UnSuspend';
+            }
+        } catch (Exception $e) {
+            $actions[] = 'Create';
+        }
+        return $actions;
+    }
 }
-?>

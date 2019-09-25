@@ -17,8 +17,8 @@ class PleskServer10
     var $limitsVars = array('max_dom', 'max_subdom', 'disk_space', 'max_traffic', 'max_wu', 'max_db', 'max_box', 'mbox_quota',
                             'max_redir', 'max_mg', 'max_resp', 'max_maillists', 'max_webapps', 'max_mssql_db');
 
-    // @access	public
-    function PleskServer10(&$settings, $host, $user, $password)
+    // @access  public
+    function __construct(&$settings, $host, $user, $password)
     {
         $this->settings =& $settings;
         $this->host = $host;
@@ -26,8 +26,8 @@ class PleskServer10
         $this->password = $password;
     }
 
-    // @return	int	    userId in Plesk
-    // @access	public
+    // @return  int     userId in Plesk
+    // @access  public
     function addUser($contactName, $login, $password, &$tUser)
     {
         // can't set a pname (full client name) because it would have to be different for each domain the client has
@@ -56,7 +56,6 @@ class PleskServer10
                 </add>
             </customer>";
 
-
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'add', $errMessage)) {
@@ -69,7 +68,7 @@ class PleskServer10
         return $response['packet']['#']['customer'][0]['#']['add'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
 
-    // @access	public
+    // @access  public
     function addResellerPermissionsAndLimits($userId, $packageVars= array())
     {
         $limits = $this->_getLimits($packageVars, true);
@@ -81,12 +80,12 @@ class PleskServer10
                         <id>$userId</id>
                     </filter>
                     <values>
-						<permissions>
-							<permission>
-								<name>create_domains</name>
-								<value>true</value>
-							</permission>
-						</permissions>
+                        <permissions>
+                            <permission>
+                                <name>create_domains</name>
+                                <value>true</value>
+                            </permission>
+                        </permissions>
                         $limits
                     </values>
                 </set>
@@ -95,7 +94,7 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'set', $errMessage)) {
-			throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'set') != 'ok') {
             throw new CE_Exception('Error contacting Plesk server when trying to give user the Create Domains permission', 101);
@@ -104,36 +103,36 @@ class PleskServer10
         return true;
     }
 
-    // @access	public
+    // @access  public
     function addIpToUser($userId, $ip)
     {
         $request = "
-			<reseller>
-				<ippool-add-ip>
-					<reseller-id>{$userId}</reseller-id>
-					<ip>
-						<ip-address>{$ip}</ip-address>
-					</ip>
-				</ippool-add-ip>
-			</reseller>";
-
+            <reseller>
+                <ippool-add-ip>
+                    <reseller-id>{$userId}</reseller-id>
+                    <ip>
+                        <ip-address>{$ip}</ip-address>
+                    </ip>
+                </ippool-add-ip>
+            </reseller>";
 
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'ippool-add-ip', $errMessage)) {
 
-			// IP is already on the reseller account
-			if ( $errorCode == 1023 )
-				return;
+            // IP is already on the reseller account
+            if ( $errorCode == 1023 ) {
+                return;
+            }
 
-			throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
+            throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'ippool-add-ip') != 'ok') {
             throw new CE_Exception('Error contacting Plesk server when trying to add IP to user', 101);
         }
     }
 
-    // @access	public
+    // @access  public
     function removeIpFromUser($userId, $ip)
     {
         $request = "
@@ -154,9 +153,9 @@ class PleskServer10
         }
     }
 
-	function addWebSpaceToUser($userID,$login, $password, $domainName, $ip, $packageVars,$usrdata)
-	{
-	$dfname =$usrdata->getFirstName();
+    function addWebSpaceToUser($userID,$login, $password, $domainName, $ip, $packageVars, $usrdata)
+    {
+        $dfname = $usrdata->getFirstName();
         $dlname = $usrdata->getLastName();
         $dorganization = $usrdata->getOrganization();
         $dphone = $usrdata->getPhone();
@@ -178,27 +177,27 @@ class PleskServer10
                 <add>
                     <gen_setup>
                         <name>".$this->_convertStr($domainName)."</name>
-						<owner-id>{$userID}</owner-id>
-						<htype>vrt_hst</htype>
+                        <owner-id>{$userID}</owner-id>
+                        <htype>vrt_hst</htype>
                         <ip_address>$ip</ip_address>
-						<status>0</status>
+                        <status>0</status>
                     </gen_setup>
-					<hosting>
-						<vrt_hst>
-							<property>
-								<name>ftp_login</name>
-								<value>{$login}</value>
-							</property>
-							<property>
-								<name>ftp_password</name>
-								<value>{$password}</value>
-							</property>
-							<ip_address>{$ip}</ip_address>
-						</vrt_hst>
-					</hosting>
+                    <hosting>
+                        <vrt_hst>
+                            <property>
+                                <name>ftp_login</name>
+                                <value>{$login}</value>
+                            </property>
+                            <property>
+                                <name>ftp_password</name>
+                                <value>{$password}</value>
+                            </property>
+                            <ip_address>{$ip}</ip_address>
+                        </vrt_hst>
+                    </hosting>
                     $limits
                     $preferences
-					$template
+                    $template
                 </add>
             </webspace>";
 
@@ -212,11 +211,11 @@ class PleskServer10
         }
 
         return $response['packet']['#']['webspace'][0]['#']['add'][0]['#']['result'][0]['#']['id'][0]['#'];
-	}
+    }
 
-	function deleteReseller($userId)
-	{
-		$request = "
+    function deleteReseller($userId)
+    {
+        $request = "
             <reseller>
                 <del>
                     <filter>
@@ -225,7 +224,7 @@ class PleskServer10
                 </del>
             </reseller>";
 
-		$response = $this->_sendRequest($request);
+        $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'del', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
@@ -233,12 +232,12 @@ class PleskServer10
         if ($this->_returnedStatus($response, 'reseller', 'del') != 'ok') {
             throw new CE_Exception('Error contacting Plesk server when trying to delete user', 101);
         }
-	}
+    }
 
-    // @access	public
+    // @access  public
     function deleteUser($userId)
     {
-    	$request = "
+        $request = "
             <customer>
                 <del>
                     <filter>
@@ -247,7 +246,7 @@ class PleskServer10
                 </del>
             </customer>";
 
-		$response = $this->_sendRequest($request);
+        $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'customer', 'del', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
@@ -257,33 +256,33 @@ class PleskServer10
         }
     }
 
-	/*Plesk client and domain status.
-	* Bit mask with bit flags:
+    /*Plesk client and domain status.
+    * Bit mask with bit flags:
 
-	* 0 - object is active
-	* 4 - object is under backup/restore
+    * 0 - object is active
+    * 4 - object is under backup/restore
 
-	* 16 - object is disabled by Administrator
+    * 16 - object is disabled by Administrator
 
-	* 64 - object is disabled by Client
-	*
-	* 256 - object expired
-	* Only 0, 16 and 64 flags are available for setting*/
+    * 64 - object is disabled by Client
+    *
+    * 256 - object expired
+    * Only 0, 16 and 64 flags are available for setting*/
     function setDomainStatus($domainId, $status)
     {
-    	$request = "
-    		<webspace>
-    			<set>
-    				<filter>
-    					<id>$domainId</id>
-					</filter>
-					<values>
-    					<gen_setup>
-							<status>$status</status>
-						</gen_setup>
-					</values>
-				</set>
-			</webspace>";
+        $request = "
+            <webspace>
+                <set>
+                    <filter>
+                        <id>$domainId</id>
+                    </filter>
+                    <values>
+                        <gen_setup>
+                            <status>$status</status>
+                        </gen_setup>
+                    </values>
+                </set>
+            </webspace>";
 
         $response = $this->_sendRequest($request);
 
@@ -293,19 +292,19 @@ class PleskServer10
         return true;
     }
 
-	function getDomainStatus($domainId)
+    function getDomainStatus($domainId)
     {
-    	$request = "
-    		<webspace>
-    			<get>
-    				<filter>
-    					<id>$domainId</id>
-					</filter>
-					<dataset>
-						<hosting/>
-					</dataset>
-				</get>
-			</webspace>";
+        $request = "
+            <webspace>
+                <get>
+                    <filter>
+                        <id>$domainId</id>
+                    </filter>
+                    <dataset>
+                        <hosting/>
+                    </dataset>
+                </get>
+            </webspace>";
 
         $response = $this->_sendRequest($request);
 
@@ -313,7 +312,7 @@ class PleskServer10
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
 
-		if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
+        if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
             throw new CE_Exception('Error contacting Plesk server when trying to get web space information', 101);
         }
 
@@ -322,19 +321,19 @@ class PleskServer10
 
     function setUserStatus($userId, $status)
     {
-    	$request = "
-    		<customer>
-    			<set>
-    				<filter>
-    					<id>$userId</id>
-					</filter>
-					<values>
-    					<gen_info>
-							<status>$status</status>
-						</gen_info>
-					</values>
-				</set>
-			</customer>";
+        $request = "
+            <customer>
+                <set>
+                    <filter>
+                        <id>$userId</id>
+                    </filter>
+                    <values>
+                        <gen_info>
+                            <status>$status</status>
+                        </gen_info>
+                    </values>
+                </set>
+            </customer>";
 
         $response = $this->_sendRequest($request);
 
@@ -344,21 +343,21 @@ class PleskServer10
         return true;
     }
 
-	function setResellerStatus($userId, $status)
+    function setResellerStatus($userId, $status)
     {
-		$request = "
-	<reseller>
-		<set>
-			<filter>
-				<id>{$userId}</id>
-			</filter>
-			<values>
-				<gen-info>
-					<status>{$status}</status>
-				</gen-info>
-			</values>
-		</set>
-	</reseller>";
+        $request = "
+    <reseller>
+        <set>
+            <filter>
+                <id>{$userId}</id>
+            </filter>
+            <values>
+                <gen-info>
+                    <status>{$status}</status>
+                </gen-info>
+            </values>
+        </set>
+    </reseller>";
 
         $response = $this->_sendRequest($request);
 
@@ -368,8 +367,8 @@ class PleskServer10
         return true;
     }
 
-	function updateUserAccount(&$tUser, $userId, $login, $password)
-	{
+    function updateUserAccount(&$tUser, $userId, $login, $password)
+    {
         $phone = $tUser->getPhone();
         $email = $tUser->getEmail();
         $address = $tUser->getAddress();
@@ -381,36 +380,37 @@ class PleskServer10
         $request = "
             <customer>
                 <set>
-					<filter>
+                    <filter>
                         <id>$userId</id>
                     </filter>
-					<values>
-						<gen_info>
-		";
-		if ( strlen($login) > 0 )
-			$request .= "<login>$login</login>";
+                    <values>
+                        <gen_info>
+        ";
+        if ( strlen($login) > 0 ) {
+            $request .= "<login>$login</login>";
+        }
 
-		if ( strlen($password) > 0 )
-			$request .= "<passwd>$password)</passwd>";
+        if ( strlen($password) > 0 ) {
+            $request .= "<passwd>{$password}</passwd>";
+        }
 
         $request .= "
-						<phone>".$this->_convertStr($phone)."</phone>
+                        <phone>".$this->_convertStr($phone)."</phone>
                         <email>".$this->_convertStr($email)."</email>
                         <address>".$this->_convertStr($address)."</address>
                         <city>".$this->_convertStr($city)."</city>
                         <state>".$this->_convertStr($state)."</state>
                         <pcode>".$this->_convertStr($pcode)."</pcode>";
-        if(strlen($organization) != 0){
-        	$request .= "
+        if (strlen($organization) != 0) {
+            $request .= "
                         <cname>".$this->_convertStr($organization)."</cname>";
 
-		}
+        }
         $request .= "
-        			 </gen_info>
-					</values>
+                     </gen_info>
+                    </values>
                 </set>
             </customer>";
-
 
         $response = $this->_sendRequest($request);
 
@@ -420,12 +420,12 @@ class PleskServer10
         if ($this->_returnedStatus($response, 'customer', 'set') != 'ok') {
             throw new CE_Exception('Error contacting Plesk server when trying to update user', 101);
         }
-	}
+    }
 
-    // @access	public
+    // @access  public
     function updateWebSpace($domainId, $login, $password, $ip, $packageVars)
     {
-    	$hostingParams = '';
+        $hostingParams = '';
         $preferences = '';
         $template = '';
         $this->_processPackageVars($hostingParams, $preferences, $template, $packageVars, $login, $password);
@@ -438,31 +438,31 @@ class PleskServer10
                         <id>$domainId</id>
                     </filter>
                     <values>
-						$preferences
+                        $preferences
                         <hosting>
                             <vrt_hst>";
-		if ( strlen($login) > 0 ) {
-			$request .= "
-								<property>
-									<name>ftp_login</name>
-									<value>{$login}</value>
-								</property>";
-		}
+        if ( strlen($login) > 0 ) {
+            $request .= "
+                                <property>
+                                    <name>ftp_login</name>
+                                    <value>{$login}</value>
+                                </property>";
+        }
 
-		if ( strlen($password) > 0 ) {
-			$request .= "
-								<property>
-									<name>ftp_password</name>
-									<value>{$password}</value>
-								</property>";
-		}
-			$request .="
+        if ( strlen($password) > 0 ) {
+            $request .= "
+                                <property>
+                                    <name>ftp_password</name>
+                                    <value>{$password}</value>
+                                </property>";
+        }
+            $request .="
                                 $hostingParams
                             <ip_address>{$ip}</ip_address>
                             </vrt_hst>
                         </hosting>
                         $limits
-						$template
+                        $template
                     </values>
                 </set>
             </webspace>";
@@ -481,7 +481,7 @@ class PleskServer10
 
     function deleteDomain($domainId)
     {
-    	$request = "
+        $request = "
             <webspace>
                 <del>
                     <filter>
@@ -502,7 +502,7 @@ class PleskServer10
     }
 
     function getDomainId($domainName)
-	{
+    {
         $request="<webspace>
                     <get>
                        <filter>
@@ -516,7 +516,7 @@ class PleskServer10
 
         $response = $this->_sendRequest($request);
 
-		if ($errorCode = $this->_errorCode($response, 'webspace', 'get', $errMessage)) {
+        if ($errorCode = $this->_errorCode($response, 'webspace', 'get', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'webspace', 'get') != 'ok') {
@@ -526,23 +526,23 @@ class PleskServer10
         return $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
 
-	function getUserId($domainUserName)
-	{
+    function getUserId($domainUserName)
+    {
         $request="<customer>
                     <get>
                        <filter>
-						  <login>{$domainUserName}</login>
+                          <login>{$domainUserName}</login>
                        </filter>
                        <dataset>
                           <gen_info/>
-						  <stat/>
+                          <stat/>
                        </dataset>
                     </get>
                     </customer>";
 
         $response = $this->_sendRequest($request);
 
-		if ($errorCode = $this->_errorCode($response, 'customer', 'get', $errMessage)) {
+        if ($errorCode = $this->_errorCode($response, 'customer', 'get', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'get') != 'ok') {
@@ -552,26 +552,26 @@ class PleskServer10
         return $response['packet']['#']['customer'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
 
-	function getResellerId($domainUserName)
-	{
-		$request = "<reseller>
-					   <get>
-						  <filter>
-							  <login>{$domainUserName}</login>
-						  </filter>
-						  <dataset>
-							  <gen-info/>
-							  <stat/>
-							  <permissions/>
-							  <limits/>
-							  <ippool/>
-						  </dataset>
-					   </get>
-					</reseller>";
+    function getResellerId($domainUserName)
+    {
+        $request = "<reseller>
+                       <get>
+                          <filter>
+                              <login>{$domainUserName}</login>
+                          </filter>
+                          <dataset>
+                              <gen-info/>
+                              <stat/>
+                              <permissions/>
+                              <limits/>
+                              <ippool/>
+                          </dataset>
+                       </get>
+                    </reseller>";
 
         $response = $this->_sendRequest($request);
 
-		if ($errorCode = $this->_errorCode($response, 'reseller', 'get', $errMessage)) {
+        if ($errorCode = $this->_errorCode($response, 'reseller', 'get', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'reseller', 'get') != 'ok') {
@@ -581,19 +581,19 @@ class PleskServer10
         return $response['packet']['#']['reseller'][0]['#']['get'][0]['#']['result'][0]['#']['id'][0]['#'];
     }
 
-	function upgradeUserToReseller($userId)
-	{
-		$request = "<customer>
-						<convert-to-reseller>
-							<filter>
-								<id>{$userId}</id>
-							</filter>
-						</convert-to-reseller>
-					</customer>";
+    function upgradeUserToReseller($userId)
+    {
+        $request = "<customer>
+                        <convert-to-reseller>
+                            <filter>
+                                <id>{$userId}</id>
+                            </filter>
+                        </convert-to-reseller>
+                    </customer>";
 
-		  $response = $this->_sendRequest($request);
+          $response = $this->_sendRequest($request);
 
-		if ($errorCode = $this->_errorCode($response, 'customer', 'convert-to-reseller', $errMessage)) {
+        if ($errorCode = $this->_errorCode($response, 'customer', 'convert-to-reseller', $errMessage)) {
             throw new CE_Exception("Plesk returned: $errMessage", $errorCode);
         }
         if ($this->_returnedStatus($response, 'customer', 'convert-to-reseller') != 'ok') {
@@ -601,11 +601,11 @@ class PleskServer10
         }
 
         return;
-	}
+    }
 
-	function getGenInfo()
+    function getGenInfo()
     {
-    	$request = <<<EOF
+        $request = <<<EOF
     <server>
         <get>
             <gen_info/>
@@ -618,14 +618,13 @@ EOF;
         return $response;
     }
 
-    // @access	private
+    // @access  private
     function _processPackageVars(&$hostingParams, &$preferences, &$template, $packageVars, $login, $password)
     {
         $frontPageSupport = false;
         if (is_array($packageVars)) {
             foreach ($packageVars as $name => $value) {
-                if ((in_array($name, $this->limitsVars) || $name == 'reseller_account' || $name == 'TemplateAttr') || (isset($packageVars['PackageNameOnServer']) && isset($packageVars['TemplateAttr']) && in_array($name, $packageVars['TemplateAttr'])))
-                {
+                if ((in_array($name, $this->limitsVars) || $name == 'reseller_account' || $name == 'TemplateAttr') || (isset($packageVars['PackageNameOnServer']) && isset($packageVars['TemplateAttr']) && in_array($name, $packageVars['TemplateAttr']))) {
                     continue;
                 }
 
@@ -640,8 +639,9 @@ EOF;
                     $value = 'false';
                 }
                 if ($name == 'www') {
-					if ( $value == '' )
-						continue;
+                    if ( $value == '' ) {
+                        continue;
+                    }
 
                     $preferences = "<prefs><www>$value</www></prefs>";
                     continue;
@@ -659,12 +659,13 @@ EOF;
                     $arr = array('awstats', 'webalizer', 'smarterstats', 'urchin', 'none');
                     if (!in_array($value, $arr)) {
                         $value = 'none';
-						continue;
+                        continue;
                     }
                 }
 
-				if ( $value == '' )
-					continue;
+                if ( $value == '' ) {
+                    continue;
+                }
 
                 $hostingParams .= "<property>\n\t<name>{$name}</name>\n\t<value>{$value}</value>\n</property>\n";
 
@@ -675,28 +676,27 @@ EOF;
 
             if ($frontPageSupport) {
                 $hostingParams .= "
-					<property>
-						<name>fp_admin_login</name>
-						<value>{$login}</value>
-					</property>
-					<property>
-						<name>fp_admin_password</name>
-						<value>{$password}</value>
-					</property>";
+                    <property>
+                        <name>fp_admin_login</name>
+                        <value>{$login}</value>
+                    </property>
+                    <property>
+                        <name>fp_admin_password</name>
+                        <value>{$password}</value>
+                    </property>";
             }
         }
 
         return true;
     }
 
-    // @access	private
+    // @access  private
     function _getLimits($packageVars, $useMax_dom)
     {
         $limits = array();
         if (is_array($packageVars)) {
             foreach ($packageVars as $name => $value) {
-                if ((is_numeric($value) && in_array($name, $this->limitsVars)) && ((!isset($packageVars['PackageNameOnServer'])) || (!isset($packageVars['TemplateAttr'])) || (!in_array($name, $packageVars['TemplateAttr']))))
-                {
+                if ((is_numeric($value) && in_array($name, $this->limitsVars)) && ((!isset($packageVars['PackageNameOnServer'])) || (!isset($packageVars['TemplateAttr'])) || (!in_array($name, $packageVars['TemplateAttr'])))) {
                     if ($name == 'max_dom' && !$useMax_dom) {
                         continue;
                     }
@@ -714,7 +714,7 @@ EOF;
         return $limits;
     }
 
-    // @access	private
+    // @access  private
     function _buildRequest($commands)
     {
         $proto = $this->rpcHandlerVersion;
@@ -727,12 +727,12 @@ EOF;
         return $request;
     }
 
-    // @access	private
+    // @access  private
     function _sendRequest($request, $skipAuth = false)
     {
-		// Let's wrap it arund the approrpriate xml tags.
-		$request = $this->_buildRequest($request);
-        require_once 'library/CE/NE_Network.php';
+        // Let's wrap it arund the approrpriate xml tags.
+        $request = $this->_buildRequest($request);
+        include_once 'library/CE/NE_Network.php';
 
         $headers = array();
         if (!$skipAuth) {
@@ -751,22 +751,20 @@ EOF;
                                                 "https://{$this->host}:{$this->rpcHandlerPort}{$this->rpcHandlerPath}",
                                                 $request, $headers, true);
 
-		if ( $response instanceof CE_Error )
-		{
-			throw new CE_Exception ("There was a problem with your request: ". $response);
-		}
+        if ($response instanceof CE_Error) {
+            throw new CE_Exception ("There was a problem with your request: ". $response);
+        }
 
         $response = XmlFunctions::xmlize($response);
 
-		if ( $response instanceof CE_Error )
-		{
-			throw new CE_Exception ("There was a problem with your XML response: ". $resposne);
-		}
+        if ($response instanceof CE_Error) {
+            throw new CE_Exception ("There was a problem with your XML response: ". $resposne);
+        }
 
         return $response;
     }
 
-    // @access	private
+    // @access  private
     function _errorCode($response, $target, $operation, &$errMessage)
     {
         // operation error
@@ -785,7 +783,7 @@ EOF;
         return false;
     }
 
-    // @access	private
+    // @access  private
     function _returnedStatus($response, $target, $operation)
     {
         if (!isset($response['packet']['#'][$target][0]['#'][$operation][0]['#']['result'][0]['#']['status'][0]['#'])) {
@@ -798,8 +796,5 @@ EOF;
     function _convertStr($str)
     {
         return $str;
-        //return CE_Lib::convertStr($this->settings->get('Character Set'), 'UTF-8', $str);
     }
 }
-
-?>
