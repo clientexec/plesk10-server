@@ -349,22 +349,24 @@ class PluginPlesk10 extends ServerPlugin
 
         $tUser = new User($args['customer']['id']);
         $server = $this->getServer($args);
-        $userId = $server->addUser( $args['customer']['first_name'] . ' ' . $args['customer']['last_name'] . ' (' . $args['package']['id'] . ')',
-                                        $args['package']['username'],
-                                        $args['package']['password'],
-                                        $tUser);
+        $userId = $server->addUser(
+            $args['customer']['first_name'] . ' ' . $args['customer']['last_name'] . ' (' . $args['package']['id'] . ')',
+            $args['package']['username'],
+            $args['package']['password'],
+            $tUser
+        );
 
         // add domain to user
-        if ( $args['package']['name_on_server'] != null && $args['package']['name_on_server'] !=  '' ) {
+        if ($args['package']['name_on_server'] != null && $args['package']['name_on_server'] !=  '') {
             $args['package']['variables']['PackageNameOnServer'] = $args['package']['name_on_server'];
             $variables = $this->getVariables();
-            foreach ($variables['package_vars_values']['value'] AS $varName=>$attrs) {
+            foreach ($variables['package_vars_values']['value'] as $varName => $attrs) {
                 if (isset($attrs['template']) && $attrs['template']) {
                     $args['package']['variables']['TemplateAttr'][] = $varName;
                 }
             }
         }
-        $domainId = $server->addWebSpaceToUser($userId, $args['package']['username'], $args['package']['password'], $args['package']['domain_name'], $args['package']['ip'], @$args['package']['variables'], @$tUser );
+        $domainId = $server->addWebSpaceToUser($userId, $args['package']['username'], $args['package']['password'], $args['package']['domain_name'], $args['package']['ip'], @$args['package']['variables'], @$tUser);
 
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
             $server->upgradeUserToReseller($userId);
@@ -388,9 +390,8 @@ class PluginPlesk10 extends ServerPlugin
         $ip = $args['package']['ip'];
         $package = '';
 
-        foreach ( $args['changes'] as $change => $newValue ) {
-            switch($change)
-            {
+        foreach ($args['changes'] as $change => $newValue) {
+            switch ($change) {
                 case 'username':
                     $userName = $newValue;
                     break;
@@ -410,10 +411,8 @@ class PluginPlesk10 extends ServerPlugin
         $tUser = new User($args['customer']['id']);
 
         if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
-
             // update reseller account if necessary
             if ($userName != $args['package']['username'] || $password != $args['package']['password']) {
-
                 $result = $server->updateAccount($tUser, $args['package']['ServerAcctProperties']['userId'], $userName, $password);
             }
         } else {
@@ -424,7 +423,7 @@ class PluginPlesk10 extends ServerPlugin
         if ($package != null && $package !=  '') {
             $args['package']['variables']['PackageNameOnServer'] = $package;
             $variables = $this->getVariables();
-            foreach ($variables['package_vars_values']['value'] AS $varName=>$attrs) {
+            foreach ($variables['package_vars_values']['value'] as $varName => $attrs) {
                 if (isset($attrs['template']) && $attrs['template']) {
                     $args['package']['variables']['TemplateAttr'][] = $varName;
                 }
@@ -512,7 +511,7 @@ class PluginPlesk10 extends ServerPlugin
 
     function getServer($args)
     {
-        if ( isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1 ) {
+        if (isset($args['package']['variables']['reseller_account']) && $args['package']['variables']['reseller_account'] == 1) {
             $server = new PleskServer10($this->settings, $args['server']['variables']['ServerHostName'], $args['server']['variables']['plugin_plesk10_Username'], $args['server']['variables']['plugin_plesk10_Password']);
         } else {
             if ($args['server']['variables']['plugin_plesk10_Non-Admin_Username'] != '' && $args['server']['variables']['plugin_plesk10_Non-Admin_Password'] != '') {
@@ -534,7 +533,7 @@ class PluginPlesk10 extends ServerPlugin
             $response = $server->getDomainStatus($domainID);
             $status = $response['packet']['#']['webspace'][0]['#']['get'][0]['#']['result'][0]['#']['data'][0]['#']['gen_info'][0]['#']['status'][0]['#'];
             $actions[] = 'Delete';
-            if ( $status == '0' ) {
+            if ($status == '0') {
                 $actions[] = 'Suspend';
             } else {
                 $actions[] = 'UnSuspend';
