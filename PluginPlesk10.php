@@ -10,7 +10,8 @@ class PluginPlesk10 extends ServerPlugin
     public $features = array(
         'packageName' => true,
         'testConnection' => false,
-        'showNameservers' => true
+        'showNameservers' => true,
+        'upgrades' => true
     );
 
     function getVariables()
