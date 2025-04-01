@@ -11,19 +11,12 @@ class PluginPlesk10 extends ServerPlugin
         'packageName' => true,
         'testConnection' => false,
         'showNameservers' => true,
-        'upgrades' => true
+        'upgrades' => true,
+        'directlink' => true,
     );
 
     function getVariables()
     {
-        /* Specification
-              itemkey     - used to identify variable in your other functions
-              type        - text,textarea,yesno,password,hidden ( type hidden are variables used by CE and are required )
-              description - description of the variable, displayed in ClientExec
-              encryptable - used to indicate the variable's value must be encrypted in the database
-              template    - used to indicate the variable is in the domain template
-        */
-
         $variables = array(
             lang('Name')          => array(
                 'type'          => 'hidden',
@@ -543,5 +536,47 @@ class PluginPlesk10 extends ServerPlugin
             $actions[] = 'Create';
         }
         return $actions;
+    }
+
+    public function getDirectLink($userPackage, $getRealLink = true, $fromAdmin = false, $isReseller = false)
+    {
+        $args = $this->buildParams($userPackage);
+        $linkText = $this->user->lang('Login to Plesk');
+
+        if ($fromAdmin) {
+            $cmd = 'panellogin';
+            return [
+                'cmd' => $cmd,
+                'label' => $linkText
+            ];
+        } elseif ($getRealLink) {
+            $server = $this->getServer($args);
+            $sessionId = $server->createSession($args['package']['username'], CE_Lib::getRemoteAddr());
+
+            $ssoUrl = 'https://' . $args['server']['variables']['ServerHostName'] . ':8443/enterprise/rsession_init.php?PLESKSESSID=' . $sessionId;
+
+            return array(
+                'fa' => 'fa fa-user fa-fw',
+                'link' => $ssoUrl,
+                'text' => $linkText,
+                'form' => ''
+            );
+        } else {
+            $link = 'index.php?fuse=clients&controller=products&action=openpackagedirectlink&packageId=' . $userPackage->getId() . '&sessionHash=' . CE_Lib::getSessionHash();
+
+            return array(
+                'fa' => 'fa fa-user fa-fw',
+                'link' => $link,
+                'text' => $linkText,
+                'form' => ''
+            );
+        }
+    }
+
+    public function dopanellogin($args)
+    {
+        $userPackage = new UserPackage($args['userPackageId']);
+        $response = $this->getDirectLink($userPackage);
+        return $response['link'];
     }
 }

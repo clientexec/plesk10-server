@@ -26,6 +26,31 @@ class PleskServer10
         $this->password = $password;
     }
 
+    function createSession($login, $ip)
+    {
+        $request = "
+            <server>
+                <create_session>
+                    <login>{$login}</login>
+                    <data>
+                        <user_ip>{$ip}</user_ip>
+                        <source_server></source_server>
+                    </data>
+                </create_session>
+            </server>";
+
+        $response = $this->_sendRequest($request);
+
+        if ($errorCode = $this->_errorCode($response, 'server', 'create_session', $errMessage)) {
+            throw new CE_Exception("Couldnt create session: $errMessage", $errorCode);
+        }
+        if ($this->_returnedStatus($response, 'server', 'create_session') != 'ok') {
+            throw new CE_Exception('Error contacting Plesk server when trying to get SSO login', 101);
+        }
+
+        return $response['packet']['#']['server'][0]['#']['create_session'][0]['#']['result'][0]['#']['id'][0]['#'];
+    }
+
     // @return  int     userId in Plesk
     // @access  public
     function addUser($contactName, $login, $password, &$tUser)
@@ -69,7 +94,7 @@ class PleskServer10
     }
 
     // @access  public
-    function addResellerPermissionsAndLimits($userId, $packageVars= array())
+    function addResellerPermissionsAndLimits($userId, $packageVars = array())
     {
         $limits = $this->_getLimits($packageVars, true);
 
@@ -119,9 +144,8 @@ class PleskServer10
         $response = $this->_sendRequest($request);
 
         if ($errorCode = $this->_errorCode($response, 'reseller', 'ippool-add-ip', $errMessage)) {
-
             // IP is already on the reseller account
-            if ( $errorCode == 1023 ) {
+            if ($errorCode == 1023) {
                 return;
             }
 
@@ -153,7 +177,7 @@ class PleskServer10
         }
     }
 
-    function addWebSpaceToUser($userID,$login, $password, $domainName, $ip, $packageVars, $usrdata)
+    function addWebSpaceToUser($userID, $login, $password, $domainName, $ip, $packageVars, $usrdata)
     {
         $dfname = $usrdata->getFirstName();
         $dlname = $usrdata->getLastName();
@@ -386,11 +410,15 @@ class PleskServer10
                     <values>
                         <gen_info>
         ";
-        if ( strlen($login) > 0 ) {
+        if (strlen($organization) != 0) {
+            $request .= "
+                        <cname>".$this->_convertStr($organization)."</cname>";
+        }
+        if (strlen($login) > 0) {
             $request .= "<login>$login</login>";
         }
 
-        if ( strlen($password) > 0 ) {
+        if (strlen($password) > 0) {
             $request .= "<passwd>{$password}</passwd>";
         }
 
@@ -401,11 +429,6 @@ class PleskServer10
                         <city>".$this->_convertStr($city)."</city>
                         <state>".$this->_convertStr($state)."</state>
                         <pcode>".$this->_convertStr($pcode)."</pcode>";
-        if (strlen($organization) != 0) {
-            $request .= "
-                        <cname>".$this->_convertStr($organization)."</cname>";
-
-        }
         $request .= "
                      </gen_info>
                     </values>
@@ -441,7 +464,7 @@ class PleskServer10
                         $preferences
                         <hosting>
                             <vrt_hst>";
-        if ( strlen($login) > 0 ) {
+        if (strlen($login) > 0) {
             $request .= "
                                 <property>
                                     <name>ftp_login</name>
@@ -449,7 +472,7 @@ class PleskServer10
                                 </property>";
         }
 
-        if ( strlen($password) > 0 ) {
+        if (strlen($password) > 0) {
             $request .= "
                                 <property>
                                     <name>ftp_password</name>
@@ -639,7 +662,7 @@ EOF;
                     $value = 'false';
                 }
                 if ($name == 'www') {
-                    if ( $value == '' ) {
+                    if ($value == '') {
                         continue;
                     }
 
@@ -663,7 +686,7 @@ EOF;
                     }
                 }
 
-                if ( $value == '' ) {
+                if ($value == '') {
                     continue;
                 }
 
@@ -747,18 +770,22 @@ EOF;
                 'Content-Type: text/xml',
         ));
 
-        $response = NE_Network::curlRequest(    $this->settings,
-                                                "https://{$this->host}:{$this->rpcHandlerPort}{$this->rpcHandlerPath}",
-                                                $request, $headers, true);
+        $response = NE_Network::curlRequest(
+            $this->settings,
+            "https://{$this->host}:{$this->rpcHandlerPort}{$this->rpcHandlerPath}",
+            $request,
+            $headers,
+            true
+        );
 
         if ($response instanceof CE_Error) {
-            throw new CE_Exception ("There was a problem with your request: ". $response);
+            throw new CE_Exception("There was a problem with your request: ". $response);
         }
 
         $response = XmlFunctions::xmlize($response);
 
         if ($response instanceof CE_Error) {
-            throw new CE_Exception ("There was a problem with your XML response: ". $resposne);
+            throw new CE_Exception("There was a problem with your XML response: ". $resposne);
         }
 
         return $response;
